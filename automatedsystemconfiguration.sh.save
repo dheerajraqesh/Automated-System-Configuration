@@ -1,0 +1,47 @@
+if [ "$EUID" -ne 0 ]; then
+  echo "Please run as root"
+  exit
+fi
+# Set environment variables
+export JAVA_HOME="/path/to/java"
+export DEV_LIB_PATH="/custom/path/to/dev/libs"
+export PREMAKE_PATH="/path/to/premake"
+export SHADERC_PATH="/path/to/shaderc"
+
+echo "Environment variables set:"
+echo "JAVA_HOME=$JAVA_HOME"
+echo "DEV_LIB_PATH=$DEV_LIB_PATH"
+echo "PREMAKE_PATH=$PREMAKE_PATH"
+echo "SHADERC_PATH=$SHADERC_PATH"
+
+# Define variables
+HOSTNAME="new-hostname"
+TIMEZONE="America/New_York"
+SSH_PORT_NO=2222
+ADDITIONAL_PACKAGES_TO_INSTALL="nginx llvm clang"
+
+# Set hostname
+hostnamectl set-hostname "$HOSTNAME"
+
+# Set timezone
+timedatectl set-timezone "$TIMEZONE"
+
+# Update system packages
+apt-get update
+apt-get upgrade -y
+
+# Install additional packages
+apt-get install -y $ADDITIONAL_PACKAGES_TO_INSTALL
+
+# Install SSH Server
+apt-get install -y openssh-server
+
+# Configure SSH to use custom port
+sed -i "s/^#\?Port [0-9]*/Port $SSH_PORT_NO/" /etc/ssh/sshd_config
+
+# Allow SSH through the firewall
+ufw allow ssh
+
+# Restart and enable SSH service
+systemctl start ssh.service
+systemctl enable ssh.service
